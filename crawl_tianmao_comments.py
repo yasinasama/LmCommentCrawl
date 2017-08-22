@@ -7,6 +7,7 @@ import math
 
 # max 99
 MAX_TAG_PAGE_COUNT = 99
+ID = '524532438541'
 PRODUCT_URL = 'https://detail.tmall.com/item.htm?id=524532438541&abbucket=1&skuId=3557354651778'
 TAG_URL = 'https://rate.tmall.com/listTagClouds.htm?itemId=524532438541&isAll=true&isInner=true'
 PRODUCT_CODE = '12601223455'
@@ -44,20 +45,20 @@ tag_item = re.findall(re_tag, tag_req.text)
 conn = getConn()
 cs = conn.cursor()
 
-for t in range(len(tag_item)):
-    tagcount = tagPageCount(int(tag_item[t][0]))
-    print('开始抓取 %s 下的评论.............................' % tag_item[t][2])
+for t in tag_item:
+    tagcount = tagPageCount(int(t[0]))
+    print('开始抓取 %s 下的评论.............................' % t[2])
 
     for i in range(tagcount):
-        req = requests.get(getCrawlUrl(id=524532438541, page=i + 1, tag=tag_item[t][1]))
-        item = re.findall(re_item, req.text)
         print('开始抓取第%d页的评论........................................' % (i + 1))
-        for j in range(len(item)):
+        req = requests.get(getCrawlUrl(id=ID, page=i + 1, tag=t[1]))
+        item = re.findall(re_item, req.text)
+        for j in item:
             product_code = PRODUCT_CODE
             product_name = PRODUCT_NAME
-            comment_content = re.sub('</?b>', '', item[j][0])
+            comment_content = re.sub('</?b>', '', j[0])
             print(comment_content)
-            comment_time = datetime.datetime.strptime(item[j][1],'%Y-%m-%d %H:%M:%S')
+            comment_time = datetime.datetime.strptime(j[1],'%Y-%m-%d %H:%M:%S')
             cs.execute('INSERT INTO comments(ProductCode, ProductName, CommentContent, CommentTime) VALUES("%s","%s","%s","%s") ' % (product_code, product_name, comment_content, comment_time))
             conn.commit()
 
